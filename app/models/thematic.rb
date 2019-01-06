@@ -1,0 +1,2 @@
+class Thematic < ApplicationRecord
+end

@@ -1,0 +1,2 @@
+class AreaDetail < ApplicationRecord
+end

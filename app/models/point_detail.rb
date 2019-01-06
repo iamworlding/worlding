@@ -1,0 +1,2 @@
+class PointDetail < ApplicationRecord
+end
