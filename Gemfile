@@ -39,8 +39,8 @@ gem 'bootsnap', '>= 1.1.0', require: false
 gem 'resque', require: 'resque/server' 
 gem 'resque-web', require: 'resque_web'
 
-
-
+# HTTP Request: httparty: https://rubygems.org/gems/httparty/versions/0.16.3
+gem 'httparty', '~> 0.16.3'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
