@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_01_07_100105) do
+ActiveRecord::Schema.define(version: 2019_01_07_163727) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -29,16 +29,10 @@ ActiveRecord::Schema.define(version: 2019_01_07_100105) do
   create_table "areas", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.float "max_latitude"
-    t.float "min_latitude"
-    t.float "max_longitude"
-    t.float "min_longitude"
-    t.integer "max_length"
-    t.float "max_five_stars"
-    t.float "max_four_stars"
-    t.float "max_three_stars"
-    t.float "max_two_stars"
-    t.float "max_one_stars"
+    t.float "initial_latitude"
+    t.float "final_latitude"
+    t.float "initial_longitude"
+    t.float "final_longitude"
     t.boolean "es", default: false
     t.boolean "en", default: false
   end
@@ -46,6 +40,14 @@ ActiveRecord::Schema.define(version: 2019_01_07_100105) do
   create_table "audios", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "operational_logs", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "source"
+    t.string "event"
+    t.string "comment"
   end
 
   create_table "photos", force: :cascade do |t|

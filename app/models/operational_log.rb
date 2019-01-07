@@ -1,0 +1,2 @@
+class OperationalLog < ApplicationRecord
+end
