@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_01_06_194432) do
+ActiveRecord::Schema.define(version: 2019_01_07_100105) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -18,11 +18,29 @@ ActiveRecord::Schema.define(version: 2019_01_06_194432) do
   create_table "area_details", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "areas_id"
+    t.string "name"
+    t.string "state"
+    t.string "country"
+    t.string "language"
+    t.index ["areas_id"], name: "index_area_details_on_areas_id"
   end
 
   create_table "areas", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.float "max_latitude"
+    t.float "min_latitude"
+    t.float "max_longitude"
+    t.float "min_longitude"
+    t.integer "max_length"
+    t.float "max_five_stars"
+    t.float "max_four_stars"
+    t.float "max_three_stars"
+    t.float "max_two_stars"
+    t.float "max_one_stars"
+    t.boolean "es", default: false
+    t.boolean "en", default: false
   end
 
   create_table "audios", force: :cascade do |t|
@@ -38,11 +56,24 @@ ActiveRecord::Schema.define(version: 2019_01_06_194432) do
   create_table "point_details", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "points_id"
+    t.string "name"
+    t.string "local_name"
+    t.string "language"
+    t.index ["points_id"], name: "index_point_details_on_points_id"
   end
 
   create_table "points", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "areas_id"
+    t.float "latitude"
+    t.float "longitude"
+    t.integer "stars"
+    t.integer "likes"
+    t.boolean "es"
+    t.boolean "en"
+    t.index ["areas_id"], name: "index_points_on_areas_id"
   end
 
   create_table "texts", force: :cascade do |t|
