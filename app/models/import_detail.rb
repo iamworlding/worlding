@@ -1,0 +1,2 @@
+class ImportDetail < ApplicationRecord
+end

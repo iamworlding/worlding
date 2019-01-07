@@ -1,0 +1,2 @@
+class ImportPoint < ApplicationRecord
+end
