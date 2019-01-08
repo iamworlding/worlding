@@ -1,0 +1,2 @@
+class ImportTextContent < ApplicationRecord
+end

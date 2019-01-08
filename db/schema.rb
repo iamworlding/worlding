@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_01_07_163727) do
+ActiveRecord::Schema.define(version: 2019_01_08_214424) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -42,6 +42,47 @@ ActiveRecord::Schema.define(version: 2019_01_07_163727) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "import_points", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "imports_id"
+    t.string "wikipedia_id"
+    t.string "wikibase_id"
+    t.string "title"
+    t.float "latitude"
+    t.float "longitude"
+    t.index ["imports_id"], name: "index_import_points_on_imports_id"
+  end
+
+  create_table "import_text_contents", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "import_points_id"
+    t.string "title"
+    t.string "content"
+    t.index ["import_points_id"], name: "index_import_text_contents_on_import_points_id"
+  end
+
+  create_table "import_thematic_points", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "import_points_id"
+    t.string "wikibase_id"
+    t.string "name"
+    t.index ["import_points_id"], name: "index_import_thematic_points_on_import_points_id"
+  end
+
+  create_table "imports", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "name"
+    t.float "initial_latitude"
+    t.float "final_latitude"
+    t.float "initial_longitude"
+    t.float "final_longitude"
+    t.string "language"
+  end
+
   create_table "operational_logs", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -71,7 +112,6 @@ ActiveRecord::Schema.define(version: 2019_01_07_163727) do
     t.bigint "areas_id"
     t.float "latitude"
     t.float "longitude"
-    t.integer "stars"
     t.integer "likes"
     t.boolean "es"
     t.boolean "en"
