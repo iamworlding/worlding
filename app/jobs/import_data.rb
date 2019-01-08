@@ -2,7 +2,7 @@ class ImportData
     
     @queue = :import_data
 
-    def self.perform(name, language, initial_latitude, final_latitude, initial_longitude, final_longitude)
+    def self.perform(name, zones, language, initial_latitude, final_latitude, initial_longitude, final_longitude)
 
       puts ""
       puts "  --- Start executing Import Data Job => " + Time.new.inspect + " ---"
@@ -13,7 +13,7 @@ class ImportData
 
       puts "      || ETL execution ||"
       # Log starting
-      OperationalLog.create(source: "jobs/import_data", event: "import_data - starting job", 
+      OperationalLog.create(source: "jobs/import_data", event: "Start", 
         comment: "Name: " + name + 
             " | Language: " + language + 
             " | Initial Latitude: " + initial_latitude.to_s + 
@@ -23,14 +23,14 @@ class ImportData
                 )
 
       # Get area data set
-      puts "      -> Get data from Area and Wikipedia"
-      origin, category, content = extractData(language, initial_latitude, final_latitude, initial_longitude, final_longitude)
+      puts "      -> Extract"
+      origin, category, content = extractData(language, zones, initial_latitude, final_latitude, initial_longitude, final_longitude)
 
-      puts "      -> Insert Import, ImportPoint, ImportDetail, ImportThematicPoint"
+      puts "      -> Load"
       loadData(origin, category, content, name, language, initial_latitude, final_latitude, initial_longitude, final_longitude)
 
       # Log ending
-      OperationalLog.create(source: "jobs/import_data", event: "import_data - ending job") 
+      OperationalLog.create(source: "jobs/import_data", event: "End") 
 
       puts ""
       puts "  --- End executing LoadPoint Job => " + Time.new.inspect + " ---"
@@ -38,24 +38,28 @@ class ImportData
 
     end
 
-    def self.extractData(language, initial_latitude, final_latitude, initial_longitude, final_longitude)
+    def self.extractData(language, zones, initial_latitude, final_latitude, initial_longitude, final_longitude)
     
-        originSet = []
-        categorySet = []
-        contentSet = []
+        originSet = [] # Contains every article in the Area
+        categorySet = [] # Find wikibase categories from articles
+        contentSet = [] # Get content from articles
 
-        # >> Calculate area zones
-        zones = [
-            "https://" + language + ".wikipedia.org/w/api.php?format=json&action=query&list=geosearch&gslimit=500&gsbbox=" + initial_latitude.to_s + "|" + initial_longitude.to_s + "|" + final_latitude.to_s + "|" + final_longitude.to_s
-        ]
+        # Calculate area zones
+        if zones
+            # TODO: Calculate zones from big cities
+            zones = []
+        else
+            zones = [
+                "https://" + language + ".wikipedia.org/w/api.php?format=json&action=query&list=geosearch&gslimit=500&gsbbox=" + initial_latitude.to_s + "|" + initial_longitude.to_s + "|" + final_latitude.to_s + "|" + final_longitude.to_s
+            ]
+        end
 
-        puts "          |_> Zones numbers: " + zones.count.to_s
-        OperationalLog.create(source: "jobs/import_data", event: "import_data - number of zones", comment: "Zones number: " + zones.count.to_s)
+        OperationalLog.create(source: "jobs/import_data", event: "Number of zones", comment: "Zones number: " + zones.count.to_s)
 
         # Get articles inside a zone
         zones.each do |url|
 
-            OperationalLog.create(source: "jobs/import_data", event: "import_data - extract data query", comment: url) 
+            OperationalLog.create(source: "jobs/import_data", event: "Zones URL", comment: url) 
             
             wikipediaResponse = HTTParty.get(url, format: :plain)
             wikipediaData = JSON.parse(wikipediaResponse, symbolize_names: true)
@@ -76,8 +80,10 @@ class ImportData
             
         end
 
-        OperationalLog.create(source: "jobs/import_data", event: "import_data - origin set", comment: "Number of points: " + originSet.count.to_s) 
+        OperationalLog.create(source: "jobs/import_data", event: "Articles set", comment: "Number of points: " + originSet.count.to_s) 
 
+        # Find categories
+        withoutCategory = []
         originSet.each do |row|
         
             categoryResponse = HTTParty.get("https://www.wikidata.org/w/api.php?action=wbgetentities&props=claims&format=json&ids=" + row[:wikibase_id], format: :plain)
@@ -97,18 +103,31 @@ class ImportData
                             :category_name => category
                         })
                     rescue
-                        puts " >>>>> Category Error"
+                        withoutCategory.push({
+                            :wikipedia_id => row[:wikipedia_id],
+                            :wikibase_id => row[:wikibase_id],
+                            :title => row[:title]
+                        })
                     end
                 end                
             rescue
-                puts " >>>>> Without Category"
+                withoutCategory.push({
+                    :wikipedia_id => row[:wikipedia_id],
+                    :wikibase_id => row[:wikibase_id],
+                    :title => row[:title]
+                })
             end
         end
 
-        OperationalLog.create(source: "jobs/import_data", event: "import_data - category set", comment: "Number of thematics: " + categorySet.count.to_s) 
+        OperationalLog.create(source: "jobs/import_data", event: "Category set", comment: "Number of thematics: " + categorySet.count.to_s)
+        OperationalLog.create(source: "jobs/import_data", event: "Category set", comment: "Number of points without thematic: " + withoutCategory.count.to_s)
+        
+        
 
+        # Find content
         originSet.each do |row|
-            textResponse = HTTParty.get("https://es.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&explaintext&redirects=1&pageids=" + row[:wikipedia_id].to_s, format: :plain)
+
+            textResponse = HTTParty.get("https://" + language + ".wikipedia.org/w/api.php?format=json&action=query&prop=extracts&explaintext&redirects=1&pageids=" + row[:wikipedia_id].to_s, format: :plain)
             textData = JSON.parse(textResponse)
 
             text = textData["query"]["pages"][row[:wikipedia_id].to_s]["extract"]
@@ -136,7 +155,7 @@ class ImportData
                 end
             end
 
-            titleData = ["Introducción"]
+            titleData = ["Intro"]
             textData = []
             #Obtain data
             loopRange.each do |iteration|
@@ -156,12 +175,14 @@ class ImportData
 
         end
 
-        OperationalLog.create(source: "jobs/import_data", event: "import_data - category set", comment: "Number of sections: " + contentSet.count.to_s)
+        OperationalLog.create(source: "jobs/import_data", event: "Content set", comment: "Number of sections: " + contentSet.count.to_s)
         
         return originSet, categorySet, contentSet
 
 
     end
+
+
 
     def self.loadData(origin, category, content, name, language, initial_latitude, final_latitude, initial_longitude, final_longitude)
         
@@ -197,9 +218,8 @@ class ImportData
             
             content.each do |content|
                 if content[:wikipedia_id] == point[:wikipedia_id]
-                    ImportDetail.create(
+                    ImportTextContent.create(
                         :import_points_id => importPoint.id,
-                        :type => "",
                         :title => content[:title],
                         :content => content[:content]
                     )
