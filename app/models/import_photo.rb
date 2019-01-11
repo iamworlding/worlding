@@ -1,0 +1,2 @@
+class ImportPhoto < ApplicationRecord
+end

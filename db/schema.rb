@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_01_08_214424) do
+ActiveRecord::Schema.define(version: 2019_01_11_124455) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -42,6 +42,14 @@ ActiveRecord::Schema.define(version: 2019_01_08_214424) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "import_photos", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "import_points_id"
+    t.string "file_url"
+    t.index ["import_points_id"], name: "index_import_photos_on_import_points_id"
+  end
+
   create_table "import_points", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -60,6 +68,7 @@ ActiveRecord::Schema.define(version: 2019_01_08_214424) do
     t.bigint "import_points_id"
     t.string "title"
     t.string "content"
+    t.integer "content_length"
     t.index ["import_points_id"], name: "index_import_text_contents_on_import_points_id"
   end
 
