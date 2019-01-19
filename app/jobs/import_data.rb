@@ -95,12 +95,16 @@ class ImportData
             wikipediaData = JSON.parse(wikipediaResponse, symbolize_names: true)
             
             parseData = wikipediaData[:query][:geosearch]
+            if parseData.count >= 500
+                puts "              + 500 articles"
+                OperationalLog.create(source: "jobs/import_data", event: "Zones with +500 articles", comment: url)
+            end
             parseData.each do |row|
                 wikibaseResponse = HTTParty.get("https://" + language + ".wikipedia.org/w/api.php?format=json&action=query&prop=pageprops&ppprop=wikibase_item&redirects=1&pageids=" + row[:pageid].to_s, format: :plain)
                 wikibaseData = JSON.parse(wikibaseResponse)
                 originSet.push({
                     :wikipedia_id => row[:pageid],
-                    :wikibase_id => wikibaseData["query"]["pages"][row[:pageid].to_s]["pageprops"]["wikibase_item"],
+                    :wikibase_id => begin wikibaseData["query"]["pages"][row[:pageid].to_s]["pageprops"]["wikibase_item"] rescue -1 end,
                     :title => row[:title], 
                     :latitude => row[:lat], 
                     :longitude => row[:lon],
@@ -320,7 +324,7 @@ class ImportData
                     :wikipedia_id => row[:wikipedia_id],
                     :title => titleData[iteration],
                     :content => textData[iteration],
-                    :content_length => textLength
+                    :content_length => textData[iteration].length
                 })
             end
 
