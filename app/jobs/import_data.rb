@@ -36,7 +36,7 @@ class ImportData
       OperationalLog.create(source: "jobs/import_data", event: "End") 
 
       puts ""
-      puts "  --- End executing LoadPoint Job => " + Time.new.inspect + " ---"
+      puts "  --- End executing Import Data Job => " + Time.new.inspect + " ---"
       puts ""
 
     end
