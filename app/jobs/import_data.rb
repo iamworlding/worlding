@@ -357,46 +357,50 @@ class ImportData
 
         origin.each do |point|
             
-            importPoint = ImportPoint.create(
-                :imports_id => import.id,
+            importPoint = import.import_points.create(
                 :wikipedia_id => point[:wikipedia_id],
                 :wikibase_id => point[:wikibase_id],
                 :title => point[:title],
                 :latitude => point[:latitude],
                 :longitude => point[:longitude],
             )
-            loadOrigin.push(importPoint.id)
-
+            if importPoint.id != nil
+                loadOrigin.push(importPoint.id)
+            end
+            
             category.each do |category|
                 if category[:wikipedia_id] == point[:wikipedia_id]
-                    importCategory = ImportThematicPoint.create(
-                        :import_points_id => importPoint.id,
+                    importCategory = importPoint.import_thematic_points.create(
                         :wikibase_id => category[:category_id],
                         :name => category[:category_name]
                     )
-                    loadCategory.push(importCategory.id)
+                    if importCategory.id != nil
+                        loadCategory.push(importCategory.id)
+                    end
                 end
             end
 
             photo.each do |photo|
                 if photo[:wikipedia_id] == point[:wikipedia_id]
-                    importPhoto = ImportPhoto.create(
-                        :import_points_id => importPoint.id,
+                    importPhoto = importPoint.import_photos.create(
                         :file_url => photo[:file_url]
                     )
-                    loadPhoto.push(importPhoto.id)
+                    if importPhoto.id != nil
+                        loadPhoto.push(importPhoto.id)
+                    end
                 end
             end
             
             content.each do |content|
                 if content[:wikipedia_id] == point[:wikipedia_id]
-                    importContent = ImportTextContent.create(
-                        :import_points_id => importPoint.id,
+                    importContent = importPoint.import_text_contents.create(
                         :title => content[:title],
                         :content => content[:content],
                         :content_length => content[:content_length],                        
                     )
-                    loadContent.push(importContent.id)
+                    if importContent.id != nil
+                        loadContent.push(importContent.id)
+                    end
                 end
             end
             

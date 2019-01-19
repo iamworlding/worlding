@@ -45,40 +45,36 @@ ActiveRecord::Schema.define(version: 2019_01_11_124455) do
   create_table "import_photos", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "import_points_id"
+    t.integer "import_point_id"
     t.string "file_url"
-    t.index ["import_points_id"], name: "index_import_photos_on_import_points_id"
   end
 
   create_table "import_points", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "imports_id"
+    t.integer "import_id"
     t.string "wikipedia_id"
     t.string "wikibase_id"
     t.string "title"
     t.float "latitude"
     t.float "longitude"
-    t.index ["imports_id"], name: "index_import_points_on_imports_id"
   end
 
   create_table "import_text_contents", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "import_points_id"
+    t.integer "import_point_id"
     t.string "title"
     t.string "content"
     t.integer "content_length"
-    t.index ["import_points_id"], name: "index_import_text_contents_on_import_points_id"
   end
 
   create_table "import_thematic_points", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "import_points_id"
+    t.integer "import_point_id"
     t.string "wikibase_id"
     t.string "name"
-    t.index ["import_points_id"], name: "index_import_thematic_points_on_import_points_id"
   end
 
   create_table "imports", force: :cascade do |t|
@@ -137,4 +133,8 @@ ActiveRecord::Schema.define(version: 2019_01_11_124455) do
     t.datetime "updated_at", null: false
   end
 
+  add_foreign_key "import_photos", "import_points"
+  add_foreign_key "import_points", "imports"
+  add_foreign_key "import_text_contents", "import_points"
+  add_foreign_key "import_thematic_points", "import_points"
 end
